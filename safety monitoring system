@@ -1,0 +1,321 @@
+#include <LiquidCrystal.h> 
+
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2); 
+
+#include <Wire.h> 
+
+ 
+
+const int LS1=A0; 
+
+const int LS2=A1; 
+
+const int IR=A2; 
+
+const int temp=A3; 
+
+ 
+
+const int ENT=6; 
+
+const int EXT=7; 
+
+const int RLY1=8; 
+
+const int RLY2=9; 
+
+const int SANTZ=10; 
+
+const int BUZZ=13; 
+
+float tempc=0; 
+
+float vout=0; 
+
+int   total=0; 
+
+int   i=0; 
+
+int   j=0; 
+
+void setup() 
+
+{   
+
+  Serial.begin(9600); 
+
+  lcd.begin(16, 2); 
+
+  lcd.setCursor(0,0); 
+
+  lcd.print("TEMPERATURE:    "); 
+
+  lcd.setCursor(0,1); 
+
+  lcd.print("AUDIENCE CNT.:  "); 
+
+  pinMode(ENT,INPUT); 
+
+   
+
+  pinMode(EXT,INPUT); 
+
+  pinMode(IR,INPUT);   
+
+  pinMode(LS1,INPUT); 
+
+  pinMode(LS2,INPUT);   
+
+  pinMode(SANTZ,OUTPUT); 
+
+  pinMode(BUZZ,OUTPUT);     
+
+  pinMode(RLY1,OUTPUT); 
+
+  pinMode(RLY2,OUTPUT); 
+
+  digitalWrite(LS1,HIGH);   
+
+  digitalWrite(LS2,HIGH);   
+
+  digitalWrite(RLY1,LOW); 
+
+  digitalWrite(RLY2,LOW); 
+
+  digitalWrite(SANTZ,LOW); 
+
+  digitalWrite(BUZZ,LOW);   
+
+   
+
+Serial.println("WELCOME");   
+
+  total=0; 
+
+  close();   
+
+  Serial.println("GATE CLOSED");       
+
+  } 
+
+void loop() 
+
+{ 
+
+  if(digitalRead(IR)==LOW) 
+
+  { 
+
+  Serial.println("SANTZ");         
+
+  digitalWrite(SANTZ,HIGH);   
+
+  delay(1000); 
+
+  digitalWrite(SANTZ,LOW);   
+
+here:   
+
+  if(digitalRead(IR)==LOW) 
+
+  {     
+
+  
+
+   goto here; 
+
+  } 
+
+  delay(500); 
+
+  } 
+
+  
+
+  if(total<10) 
+
+  { 
+
+  if(digitalRead(ENT)==HIGH) 
+
+  { 
+
+  Serial.println("ENTRY");         
+
+  delay(2000); 
+
+vout=analogRead(temp); 
+
+vout=(vout*500)/1023; 
+
+tempc=vout; 
+
+lcd.setCursor(12,0); 
+
+lcd.print(tempc); 
+
+Serial.println(tempc); 
+
+  if(tempc<38)   
+
+  { 
+
+  open(); 
+
+  Serial.println("GATE OPENED");       
+
+  total=total+1; 
+
+  lcd.setCursor(14,1); 
+
+  //lcd.print(total); 
+
+  if(total<10) 
+
+  { 
+
+  lcd.print("0");     
+
+  lcd.print(total);   
+
+  } 
+
+  else 
+
+  { 
+
+   
+
+              lcd.print(total); 
+
+   
+
+  } 
+
+  delay(3000); 
+
+  close(); 
+
+  Serial.println("GATE CLOSED");       
+
+  } 
+
+  else 
+
+  { 
+
+  close(); 
+
+  Serial.println("GATE CLOSED&BUZZ ON");       
+
+  digitalWrite(BUZZ,HIGH);   
+
+  delay(5000); 
+
+  digitalWrite(BUZZ,LOW);     
+
+  } 
+
+  } 
+
+  } 
+
+  
+
+  if(digitalRead(EXT)==HIGH) 
+
+  { 
+
+   Serial.println("EXIT");         
+
+  if(total>0) 
+
+  { 
+
+  total=total-1; 
+
+  lcd.setCursor(14,1); 
+
+//  lcd.print(total); 
+
+  if(total<10) 
+
+  { 
+
+  lcd.print("0");     
+
+  lcd.print(total);   
+
+  } 
+
+  else 
+
+  { 
+
+  lcd.print(total); 
+
+  } 
+
+  delay(1000); 
+
+  } 
+
+  } 
+
+ 
+
+ } 
+
+ void open() 
+
+{ 
+
+ AGN1:   
+
+  if(digitalRead(LS1)==HIGH) 
+
+  { 
+
+  digitalWrite(RLY1,HIGH);   
+
+  digitalWrite(RLY2,LOW); 
+
+  goto AGN1; 
+
+  } 
+
+   
+
+  digitalWrite(RLY1,LOW);   
+
+  digitalWrite(RLY2,LOW);   
+
+} 
+
+void close() 
+
+{ 
+
+AGN2:   
+
+  if(digitalRead(LS2)==HIGH) 
+
+  { 
+
+  digitalWrite(RLY2,HIGH);   
+
+  digitalWrite(RLY1,LOW); 
+
+  goto AGN2; 
+
+  } 
+
+  digitalWrite(RLY1,LOW);   
+
+   
+
+ 
+
+digitalWrite(RLY2,LOW);   
+
+} 
